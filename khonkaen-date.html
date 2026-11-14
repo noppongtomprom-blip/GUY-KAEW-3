@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>เลือกร้านเดท ขอนแก่น</title>
+<style>
+:root{--bg:#fff7f4;--card:#fff;--text:#2b2024;--muted:#7a6a70;--accent:#d6455d;--accent-t:#fff;--line:#f0dcd9;--chip:#fdebe8;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1417;--card:#281d21;--text:#f6eaed;--muted:#b9a3aa;--accent:#ee6a80;--accent-t:#2b1018;--line:#43323a;--chip:#3a2830}}
+:root[data-theme="dark"]{--bg:#1c1417;--card:#281d21;--text:#f6eaed;--muted:#b9a3aa;--accent:#ee6a80;--accent-t:#2b1018;--line:#43323a;--chip:#3a2830}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Thai","Sarabun",system-ui,sans-serif;line-height:1.5}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:8px 0 4px}
+.sub{color:var(--muted);margin:0 0 20px}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+h2{font-size:1rem;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--chip);color:var(--text);border-radius:999px;padding:8px 14px;font:inherit;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-t);border-color:var(--accent)}
+input[type=time]{font:inherit;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+.row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.hint{color:var(--muted);font-size:.9rem;margin:8px 0 0}
+.links{display:grid;gap:10px}
+a.btn,button.btn{display:block;text-align:center;text-decoration:none;font:inherit;border-radius:12px;padding:12px;cursor:pointer;border:1px solid var(--accent)}
+a.main{background:var(--accent);color:var(--accent-t)}
+a.alt,button.btn{background:transparent;color:var(--accent)}
+#summary{font-weight:600;margin:0 0 12px}
+</style>
+</head>
+<body>
+<main>
+<h1>💕 เลือกร้านเดท ในเมืองขอนแก่น</h1>
+<p class="sub">เลือกประเภทอาหารกับเวลา แล้วกดเปิดลิงก์ได้เลย</p>
+
+<section>
+<h2>ประเภทอาหาร</h2>
+<div class="chips" id="cuisines"></div>
+</section>
+
+<section>
+<h2>เวลา</h2>
+<div class="chips" id="slots"></div>
+<div class="row"><label for="t">หรือระบุเวลาเอง</label><input type="time" id="t" value="18:30"></div>
+<p class="hint" id="hint"></p>
+</section>
+
+<section>
+<h2>เปิดลิงก์</h2>
+<p id="summary"></p>
+<div class="links">
+<a class="btn main" id="gmap" target="_blank" rel="noopener noreferrer">📍 ค้นหาใน Google Maps</a>
+<a class="btn alt" id="wongnai" target="_blank" rel="noopener noreferrer">🍴 ดูรีวิวใน Wongnai</a>
+<a class="btn alt" id="google" target="_blank" rel="noopener noreferrer">🔎 ค้นหาใน Google</a>
+<button class="btn" id="rand" type="button">🎲 สุ่มประเภทอาหารให้</button>
+</div>
+</section>
+</main>
+<script>
+const cuisines=[
+{n:"ญี่ปุ่น",q:"ร้านอาหารญี่ปุ่น"},
+{n:"อิตาเลียน",q:"ร้านอาหารอิตาเลียน พาสต้า พิซซ่า"},
+{n:"สเต็ก",q:"ร้านสเต็ก"},
+{n:"ปิ้งย่าง/ชาบู",q:"ร้านปิ้งย่าง ชาบู"},
+{n:"อาหารไทย",q:"ร้านอาหารไทย บรรยากาศดี"},
+{n:"อาหารอีสาน",q:"ร้านอาหารอีสาน บรรยากาศดี"},
+{n:"คาเฟ่/ขนม",q:"คาเฟ่ ขนมหวาน"},
+{n:"ไวน์/บาร์",q:"บาร์ ร้านไวน์ นั่งชิล"},
+{n:"ร้านวิวสวย",q:"ร้านอาหารวิวสวย ริมน้ำ"}
+];
+const slots=[
+{n:"เช้า/บรันช์",t:"10:00",k:"บรันช์ อาหารเช้า"},
+{n:"กลางวัน",t:"12:30",k:""},
+{n:"บ่าย",t:"15:00",k:"คาเฟ่"},
+{n:"เย็น",t:"18:30",k:"โรแมนติก"},
+{n:"ค่ำ/ดึก",t:"21:00",k:"เปิดดึก"}
+];
+let ci=0,si=3;
+const $=id=>document.getElementById(id);
+function chips(el,list,get,set){
+el.innerHTML="";
+list.forEach((x,i)=>{
+const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=x.n;
+b.setAttribute("aria-pressed",get()===i);
+b.onclick=()=>{set(i);render()};
+el.appendChild(b);
+});
+}
+function periodOf(t){
+const h=parseInt(t.split(":")[0],10);
+if(h<11)return 0;if(h<14)return 1;if(h<17)return 2;if(h<20)return 3;return 4;
+}
+function render(){
+chips($("cuisines"),cuisines,()=>ci,i=>ci=i);
+chips($("slots"),slots,()=>si,i=>{si=i;$("t").value=slots[i].t});
+const c=cuisines[ci],s=slots[si],t=$("t").value||s.t;
+const kw=[c.q,s.k,"ขอนแก่น"].filter(Boolean).join(" ");
+const enc=encodeURIComponent(kw);
+$("summary").textContent="🍽 "+c.n+" • ⏰ "+t+" น. • ขอนแก่น";
+$("hint").textContent=s.k?("คำค้นหาเสริมตามช่วงเวลา: "+s.k):"เหมาะกับมื้อกลางวัน ควรจองโต๊ะล่วงหน้าหากไปช่วงวันหยุด";
+$("gmap").href="https://www.google.com/maps/search/?api=1&query="+enc;
+$("wongnai").href="https://www.wongnai.com/businesses?q="+encodeURIComponent(c.q+" ขอนแก่น");
+$("google").href="https://www.google.com/search?q="+encodeURIComponent(kw+" รีวิว เปิดกี่โมง");
+}
+$("t").addEventListener("input",()=>{si=periodOf($("t").value);render()});
+$("rand").onclick=()=>{ci=Math.floor(Math.random()*cuisines.length);render()};
+render();
+</script>
+</body>
+</html>
